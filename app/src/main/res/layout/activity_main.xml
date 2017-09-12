@@ -19,11 +19,33 @@
     </RelativeLayout>
 
 
-
-
     <Button
         android:onClick="pauseOrPlay"
         android:text="暂停/继续"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="closeVoice"
+        android:text="静音"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="addVoice"
+        android:text="voice+"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="closeLight"
+        android:text="Light-"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="addLight"
+        android:text="Light+"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
