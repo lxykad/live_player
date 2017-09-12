@@ -30,7 +30,4 @@ dependencies {
     compile 'tv.danmaku.ijk.media:ijkplayer-java:0.8.2'
     compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.2'
     compile 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.2'
-    compile 'com.android.support:design:26.0.0-alpha1'
-    compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
-    compile 'com.android.support:support-v4:26.0.0-alpha1'
 }
