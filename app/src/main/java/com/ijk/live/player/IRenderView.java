@@ -38,6 +38,8 @@ public interface IRenderView {
 
     boolean shouldWaitForResize();
 
+    void setVisibility(int visibility);
+
     void setVideoSize(int videoWidth, int videoHeight);
 
     void setVideoSampleAspectRatio(int videoSarNum, int videoSarDen);

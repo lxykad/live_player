@@ -5,17 +5,14 @@ import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.DragEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ijk.live.application.Settings;
 import com.ijk.live.player.AndroidMediaController;
-import com.ijk.live.player.IMediaController;
 import com.ijk.live.player.IjkVideoView;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -29,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     private RelativeLayout mLiveLayout;
 
     private Settings mSetting;
+
+    private IjkVideoView mVideoView2;
+    private RelativeLayout mLiveLayout2;
 
 
     AndroidMediaController mController;
@@ -54,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         mLiveLayout = (RelativeLayout) findViewById(R.id.video_layout);
         mVideoView = (IjkVideoView) findViewById(R.id.video_view);
+
+        mLiveLayout2 = (RelativeLayout) findViewById(R.id.video_layout2);
+        mVideoView2 = (IjkVideoView) findViewById(R.id.video_view2);
+
         mSetting = new Settings(this);
         mController = new AndroidMediaController(this, false);
         mVideoView.setMediaController(mController);
@@ -63,11 +67,21 @@ public class MainActivity extends AppCompatActivity {
 //        mVideoView.start();
 
         mVideoView.setVideoPath(url);
+        mVideoView2.setVideoPath(url2);
 
         mVideoView.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer iMediaPlayer) {
                 mVideoView.start();
+
+
+            }
+        });
+
+        mVideoView2.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(IMediaPlayer iMediaPlayer) {
+                mVideoView2.start();
 
 
             }
@@ -153,6 +167,20 @@ public class MainActivity extends AppCompatActivity {
         IjkMediaPlayer.native_profileEnd();
     }
 
+    public void clickGone(View view) {
+        Toast.makeText(view.getContext(), "gone", Toast.LENGTH_SHORT).show();
+        mVideoView.pause();
+        mVideoView.setVisibility(View.GONE);
+        mLiveLayout.setVisibility(View.GONE);
+    }
+
+    public void clickShow(View view) {
+        Toast.makeText(view.getContext(), "gone", Toast.LENGTH_SHORT).show();
+        mVideoView.setVisibility(View.VISIBLE);
+        mLiveLayout.setVisibility(View.VISIBLE);
+        mVideoView.resume();
+    }
+
     public void pauseOrPlay(View view) {
 
 
@@ -166,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void closeVoice(View view){
+    public void closeVoice(View view) {
         //Toast.makeText(view.getContext(),"voice"+mVolume,Toast.LENGTH_SHORT).show();
         a = 0;
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, a, AudioManager.FLAG_PLAY_SOUND);
@@ -174,26 +202,27 @@ public class MainActivity extends AppCompatActivity {
 
     int a = 0;
 
-    public void addVoice(View view){
+    public void addVoice(View view) {
         a++;
 
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, a, AudioManager.FLAG_PLAY_SOUND);
 
 
-        Toast.makeText(view.getContext(),"add"+mAudioMode,Toast.LENGTH_SHORT).show();
+        Toast.makeText(view.getContext(), "add" + mAudioMode, Toast.LENGTH_SHORT).show();
 
 
     }
 
     int light = 0;
-    public void closeLight(View view){
-        if (light>0) {
+
+    public void closeLight(View view) {
+        if (light > 0) {
             light--;
         }
         //setScreenBrightness(light);
     }
 
-    public void addLight(View view){
+    public void addLight(View view) {
         light++;
 //        setScreenBrightness(light);
     }
@@ -203,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         WindowManager.LayoutParams l = w.getAttributes();
         l.screenBrightness = value;
         w.setAttributes(l);
-       // Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, value);
+        // Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, value);
         android.provider.Settings.System.putInt(getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS, value);
     }
 
