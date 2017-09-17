@@ -2,6 +2,7 @@ package com.ijk.live;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,24 @@ import com.ijk.live.application.Settings;
 import com.ijk.live.player.AndroidMediaController;
 import com.ijk.live.player.IjkVideoView;
 
+import java.io.InputStream;
+import java.security.DomainCombiner;
+import java.util.HashMap;
+
+import master.flame.danmaku.controller.DrawHandler;
+import master.flame.danmaku.controller.IDanmakuView;
+import master.flame.danmaku.danmaku.loader.ILoader;
+import master.flame.danmaku.danmaku.loader.IllegalDataException;
+import master.flame.danmaku.danmaku.loader.android.DanmakuLoaderFactory;
+import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.model.DanmakuTimer;
+import master.flame.danmaku.danmaku.model.IDisplayer;
+import master.flame.danmaku.danmaku.model.android.DanmakuContext;
+import master.flame.danmaku.danmaku.model.android.Danmakus;
+import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
+import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
+import master.flame.danmaku.danmaku.parser.IDataSource;
+import master.flame.danmaku.ui.widget.DanmakuView;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -37,6 +56,119 @@ public class MainActivity extends AppCompatActivity {
     private AssetManager mAssetManager;
     private int mVolume;
     private int mAudioMode;
+    // 弹幕
+    private BaseDanmakuParser mParser;//解析器对象
+    private DanmakuContext mContext;
+    private DanmakuView mDanmakuView;
+
+    public void initDanMu(){
+        mDanmakuView = (DanmakuView) findViewById(R.id.danmu_view);
+        //
+        mContext = DanmakuContext.create();
+        // 设置弹幕的最大显示行数
+        HashMap<Integer, Integer> maxLinesPair = new HashMap<Integer, Integer>();
+        maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_RL, 3); // 滚动弹幕最大显示3行
+        // 设置是否禁止重叠
+        HashMap<Integer, Boolean> overlappingEnablePair = new HashMap<Integer, Boolean>();
+        overlappingEnablePair.put(BaseDanmaku.TYPE_SCROLL_LR, true);
+        overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_BOTTOM, true);
+
+        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3) //设置描边样式
+                .setDuplicateMergingEnabled(false)
+                .setScrollSpeedFactor(1.2f) //是否启用合并重复弹幕
+                .setScaleTextSize(1.2f) //设置弹幕滚动速度系数,只对滚动弹幕有效
+                //     .setCacheStuffer(new SpannedCacheStuffer(), mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer  设置缓存绘制填充器，默认使用{@link SimpleTextCacheStuffer}只支持纯文字显示, 如果需要图文混排请设置{@link SpannedCacheStuffer}如果需要定制其他样式请扩展{@link SimpleTextCacheStuffer}|{@link SpannedCacheStuffer}
+                .setMaximumLines(maxLinesPair) //设置最大显示行数
+                .preventOverlapping(overlappingEnablePair); //设置防弹幕重叠，null为允许重叠
+
+        if (mDanmakuView!=null) {
+            //mParser = createParser(this.getResources().openRawResource(R.raw.comments)); //创建解析器对象，从raw资源目录下解析comments.xml文本
+
+            mDanmakuView.setCallback(new DrawHandler.Callback() {
+                @Override
+                public void prepared() {
+                    mDanmakuView.start();
+                }
+
+                @Override
+                public void updateTimer(DanmakuTimer timer) {
+
+                }
+
+                @Override
+                public void danmakuShown(BaseDanmaku danmaku) {
+
+                }
+
+                @Override
+                public void drawingFinished() {
+
+                }
+            });
+
+            mDanmakuView.prepare(mParser, mContext);
+            mDanmakuView.showFPS(false); //是否显示FPS
+            mDanmakuView.enableDanmakuDrawingCache(true);
+
+        }
+
+
+    }
+
+    /**
+     * 添加文本弹幕
+     * @param islive
+     */
+    private void addDanmaku(boolean islive) {
+        BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        if (danmaku == null || mDanmakuView == null) {
+            return;
+        }
+
+        danmaku.text = "这是一条弹幕" + System.nanoTime();
+        danmaku.padding = 5;
+        danmaku.priority = 0;  //0 表示可能会被各种过滤器过滤并隐藏显示 //1 表示一定会显示, 一般用于本机发送的弹幕
+        danmaku.isLive = islive; //是否是直播弹幕
+      //  danmaku.time = mDanmakuView.getCurrentTime() + 1200; //显示时间
+        danmaku.textSize = 25f * (mParser.getDisplayer().getDensity() - 0.6f);
+        danmaku.textColor = Color.RED;
+        danmaku.textShadowColor = Color.WHITE; //阴影/描边颜色
+        danmaku.borderColor = Color.GREEN; //边框颜色，0表示无边框
+        mDanmakuView.addDanmaku(danmaku);
+
+    }
+    /**
+     * 创建解析器对象，解析输入流
+     * @param stream
+     * @return
+     */
+    private BaseDanmakuParser createParser(InputStream stream) {
+
+        if (stream == null) {
+            return new BaseDanmakuParser() {
+
+                @Override
+                protected Danmakus parse() {
+                    return new Danmakus();
+                }
+            };
+        }
+
+        // DanmakuLoaderFactory.create(DanmakuLoaderFactory.TAG_BILI) //xml解析
+        // DanmakuLoaderFactory.create(DanmakuLoaderFactory.TAG_ACFUN) //json文件格式解析
+        ILoader loader = DanmakuLoaderFactory.create(DanmakuLoaderFactory.TAG_BILI);
+
+        try {
+            loader.load(stream);
+        } catch (IllegalDataException e) {
+            e.printStackTrace();
+        }
+    //    BaseDanmakuParser parser = new BiliDanmukuParser();
+        IDataSource<?> dataSource = loader.getDataSource();
+     //   parser.load(dataSource);
+    //    return parser;
+        return null;
+    }
 
 
     @Override
@@ -46,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
 
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
+
+        //
+        initDanMu();
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -72,9 +207,7 @@ public class MainActivity extends AppCompatActivity {
         mVideoView.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer iMediaPlayer) {
-                mVideoView.start();
-
-
+                //mVideoView.start();
             }
         });
 
@@ -159,12 +292,23 @@ public class MainActivity extends AppCompatActivity {
 
             //  mVideoView.stopPlayback();
         }
+
+        // 释放弹幕资源
+        if (mDanmakuView != null) {
+            // dont forget release!
+            mDanmakuView.release();
+            mDanmakuView = null;
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         IjkMediaPlayer.native_profileEnd();
+    }
+
+    public void sendDanMu(View view){
+        Toast.makeText(view.getContext(),"danmu",Toast.LENGTH_SHORT).show();
     }
 
     public void clickGone(View view) {

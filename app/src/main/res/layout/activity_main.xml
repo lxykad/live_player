@@ -14,62 +14,74 @@
         <com.ijk.live.player.IjkVideoView
             android:id="@+id/video_view"
             android:layout_width="match_parent"
-            android:layout_height="150dp"/>
+            android:layout_height="150dp" />
 
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_marginTop="5dp"
         android:id="@+id/video_layout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp">
 
         <com.ijk.live.player.IjkVideoView
             android:id="@+id/video_view2"
             android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+            android:layout_height="200dp" />
+
+        <master.flame.danmaku.ui.widget.DanmakuView
+            android:id="@+id/danmu_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
 
     </RelativeLayout>
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="sendDanMu"
+        android:text="发弹幕" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="clickGone"
-        android:text="隐藏播放器1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="隐藏播放器1" />
+
     <Button
-        android:text="显示播放器1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="clickShow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="显示播放器1" />
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="pauseOrPlay"
-        android:text="暂停/继续"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="暂停/继续" />
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="closeVoice"
-        android:text="静音"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="静音" />
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="addVoice"
-        android:text="voice+"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="voice+" />
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="closeLight"
-        android:text="Light-"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="Light-" />
 
     <Button
-        android:onClick="addLight"
-        android:text="Light+"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:onClick="addLight"
+        android:text="Light+" />
 
 </LinearLayout>
