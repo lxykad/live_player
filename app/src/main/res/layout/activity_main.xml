@@ -14,10 +14,33 @@
         <com.ijk.live.player.IjkVideoView
             android:id="@+id/video_view"
             android:layout_width="match_parent"
+            android:layout_height="150dp"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_marginTop="5dp"
+        android:id="@+id/video_layout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.ijk.live.player.IjkVideoView
+            android:id="@+id/video_view2"
+            android:layout_width="match_parent"
             android:layout_height="200dp"/>
 
     </RelativeLayout>
 
+    <Button
+        android:onClick="clickGone"
+        android:text="隐藏播放器1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:text="显示播放器1"
+        android:onClick="clickShow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <Button
         android:onClick="pauseOrPlay"
