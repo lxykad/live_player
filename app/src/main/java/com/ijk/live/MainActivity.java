@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,12 +18,12 @@ import com.ijk.live.application.Settings;
 import com.ijk.live.player.AndroidMediaController;
 import com.ijk.live.player.IjkVideoView;
 
+import org.w3c.dom.ls.LSException;
+
 import java.io.InputStream;
-import java.security.DomainCombiner;
 import java.util.HashMap;
 
 import master.flame.danmaku.controller.DrawHandler;
-import master.flame.danmaku.controller.IDanmakuView;
 import master.flame.danmaku.danmaku.loader.ILoader;
 import master.flame.danmaku.danmaku.loader.IllegalDataException;
 import master.flame.danmaku.danmaku.loader.android.DanmakuLoaderFactory;
@@ -30,7 +32,6 @@ import master.flame.danmaku.danmaku.model.DanmakuTimer;
 import master.flame.danmaku.danmaku.model.IDisplayer;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.model.android.Danmakus;
-import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.ui.widget.DanmakuView;
@@ -54,14 +55,18 @@ public class MainActivity extends AppCompatActivity {
 
     private AudioManager mAudioManager;
     private AssetManager mAssetManager;
-    private int mVolume;
+    //private int mVolume;
     private int mAudioMode;
     // 弹幕
     private BaseDanmakuParser mParser;//解析器对象
     private DanmakuContext mContext;
     private DanmakuView mDanmakuView;
+    private ScaleGestureDetector mScaleDetetor;
+    private int last;
+    private int current;
+    private boolean isFirst = true;
 
-    public void initDanMu(){
+    public void initDanMu() {
         mDanmakuView = (DanmakuView) findViewById(R.id.danmu_view);
         //
         mContext = DanmakuContext.create();
@@ -81,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMaximumLines(maxLinesPair) //设置最大显示行数
                 .preventOverlapping(overlappingEnablePair); //设置防弹幕重叠，null为允许重叠
 
-        if (mDanmakuView!=null) {
+        if (mDanmakuView != null) {
             //mParser = createParser(this.getResources().openRawResource(R.raw.comments)); //创建解析器对象，从raw资源目录下解析comments.xml文本
 
             mDanmakuView.setCallback(new DrawHandler.Callback() {
@@ -117,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 添加文本弹幕
+     *
      * @param islive
      */
     private void addDanmaku(boolean islive) {
@@ -129,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         danmaku.padding = 5;
         danmaku.priority = 0;  //0 表示可能会被各种过滤器过滤并隐藏显示 //1 表示一定会显示, 一般用于本机发送的弹幕
         danmaku.isLive = islive; //是否是直播弹幕
-      //  danmaku.time = mDanmakuView.getCurrentTime() + 1200; //显示时间
+        //  danmaku.time = mDanmakuView.getCurrentTime() + 1200; //显示时间
         danmaku.textSize = 25f * (mParser.getDisplayer().getDensity() - 0.6f);
         danmaku.textColor = Color.RED;
         danmaku.textShadowColor = Color.WHITE; //阴影/描边颜色
@@ -137,8 +143,10 @@ public class MainActivity extends AppCompatActivity {
         mDanmakuView.addDanmaku(danmaku);
 
     }
+
     /**
      * 创建解析器对象，解析输入流
+     *
      * @param stream
      * @return
      */
@@ -163,10 +171,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (IllegalDataException e) {
             e.printStackTrace();
         }
-    //    BaseDanmakuParser parser = new BiliDanmukuParser();
+        //    BaseDanmakuParser parser = new BiliDanmukuParser();
         IDataSource<?> dataSource = loader.getDataSource();
-     //   parser.load(dataSource);
-    //    return parser;
+        //   parser.load(dataSource);
+        //    return parser;
         return null;
     }
 
@@ -180,10 +188,10 @@ public class MainActivity extends AppCompatActivity {
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 
         //
-        initDanMu();
+        // initDanMu();
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        // mVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         mAudioMode = mAudioManager.getMode();
 
 
@@ -197,6 +205,47 @@ public class MainActivity extends AppCompatActivity {
         mController = new AndroidMediaController(this, false);
         mVideoView.setMediaController(mController);
 
+        mScaleDetetor = new ScaleGestureDetector(this, new ScaleGestureDetector.OnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+
+                if (isFirst) {
+                    last = (int) detector.getCurrentSpanX();
+                } else {
+                    current = (int) detector.getCurrentSpanX();
+                    int count = current - last;
+
+                    System.out.println("=======onScale=" + count);
+                    //last = current;
+                }
+                isFirst = false;
+
+
+                return true;
+            }
+
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+
+                // System.out.println("=======onScaleBegin"+detector.getPreviousSpanX());
+                // 返回值为false时，不执行scale和end
+                return true;
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
+                System.out.println("=======onScaleEnd");
+                isFirst = true;
+            }
+        });
+        mLiveLayout2.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                mScaleDetetor.onTouchEvent(motionEvent);
+                return true;
+            }
+        });
 
 //        mVideoView.setVideoURI(Uri.parse(url));
 //        mVideoView.start();
@@ -214,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         mVideoView2.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer iMediaPlayer) {
-                mVideoView2.start();
+                //mVideoView2.start();
 
 
             }
@@ -307,8 +356,8 @@ public class MainActivity extends AppCompatActivity {
         IjkMediaPlayer.native_profileEnd();
     }
 
-    public void sendDanMu(View view){
-        Toast.makeText(view.getContext(),"danmu",Toast.LENGTH_SHORT).show();
+    public void sendDanMu(View view) {
+        Toast.makeText(view.getContext(), "danmu", Toast.LENGTH_SHORT).show();
     }
 
     public void clickGone(View view) {
