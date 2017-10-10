@@ -399,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //缩放开关
-    public void closeZoom(View view){
+    public void closeZoom(View view) {
 
         if (mCanZoom) {
             //关闭缩放
@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity {
             mCanZoom = false;
             mBtZoom.setText("打开缩放");
 
-        }else {
+        } else {
             // 打开缩放
             mLiveLayout2.setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -427,6 +427,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void clickBig(View view) {
 
+        if (!mCanZoom) {
+            return;
+        }
+
         int width = mLiveLayout2.getWidth();
         int height = mLiveLayout2.getHeight();
 
@@ -439,6 +443,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickSmall(View view) {
+        if (!mCanZoom) {
+            return;
+        }
         mCurrentHeight -= 30;
         mCurrentWidth -= 30;
         mParams.height = mCurrentHeight;
