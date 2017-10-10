@@ -21,13 +21,14 @@
     <RelativeLayout
         android:id="@+id/video_layout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp">
+        android:layout_height="200dp"
+        android:layout_marginTop="5dp"
+        android:background="#3f00">
 
         <com.ijk.live.player.IjkVideoView
             android:id="@+id/video_view2"
             android:layout_width="match_parent"
-            android:layout_height="200dp" />
+            android:layout_height="match_parent" />
 
         <master.flame.danmaku.ui.widget.DanmakuView
             android:id="@+id/danmu_view"
@@ -35,6 +36,25 @@
             android:layout_height="200dp" />
 
     </RelativeLayout>
+
+    <Button
+        android:id="@+id/bt_zoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="closeZoom"
+        android:text="打开缩放" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="clickBig"
+        android:text="放大" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="clickSmall"
+        android:text="缩小" />
 
     <Button
         android:layout_width="wrap_content"

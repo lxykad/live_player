@@ -6,19 +6,21 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ijk.live.application.Settings;
 import com.ijk.live.player.AndroidMediaController;
 import com.ijk.live.player.IjkVideoView;
-
-import org.w3c.dom.ls.LSException;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -62,9 +64,22 @@ public class MainActivity extends AppCompatActivity {
     private DanmakuContext mContext;
     private DanmakuView mDanmakuView;
     private ScaleGestureDetector mScaleDetetor;
+    private GestureDetector mGestureDetector;
     private int last;
     private int current;
     private boolean isFirst = true;
+
+    int x = 100;
+    int y = 100;
+    private int lastX;
+    private int lastY;
+
+    private int mCurrentWidth;
+    private int mCurrentHeight;
+    private boolean mCanZoom = true;
+
+    private LinearLayout.LayoutParams mParams;
+    private Button mBtZoom;
 
     public void initDanMu() {
         mDanmakuView = (DanmakuView) findViewById(R.id.danmu_view);
@@ -187,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 
+        mBtZoom = (Button) findViewById(R.id.bt_zoom);
         //
         // initDanMu();
 
@@ -200,6 +216,19 @@ public class MainActivity extends AppCompatActivity {
 
         mLiveLayout2 = (RelativeLayout) findViewById(R.id.video_layout2);
         mVideoView2 = (IjkVideoView) findViewById(R.id.video_view2);
+        mParams = (LinearLayout.LayoutParams) mLiveLayout2.getLayoutParams();
+
+        mLiveLayout2.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        mCurrentHeight = mLiveLayout2.getMeasuredHeight();
+                        mCurrentWidth = mLiveLayout2.getMeasuredWidth();
+                        System.out.println("=======currentw=" + mCurrentWidth);
+                        mLiveLayout2.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                });
+
 
         mSetting = new Settings(this);
         mController = new AndroidMediaController(this, false);
@@ -238,14 +267,59 @@ public class MainActivity extends AppCompatActivity {
                 isFirst = true;
             }
         });
-        mLiveLayout2.setOnTouchListener(new View.OnTouchListener() {
+        mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
             @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
+            public boolean onDown(MotionEvent e) {
+                lastX = (int) e.getRawX();
+                lastY = (int) e.getRawY();
+                return false;
+            }
 
-                mScaleDetetor.onTouchEvent(motionEvent);
-                return true;
+            @Override
+            public void onShowPress(MotionEvent motionEvent) {
+                System.out.println("=======onShowPress");
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent motionEvent) {
+                System.out.println("=======onSingleTapUp");
+                return false;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent event, float v, float v1) {
+
+                //获取到手指处的横坐标和纵坐标
+                int x = (int) event.getRawX();
+                int y = (int) event.getRawY();
+                //计算移动的距离
+                int offsetX = x - lastX;
+                int offsetY = y - lastY;
+
+                int leftMargin = mParams.leftMargin + offsetX;
+                int topMargin = mParams.topMargin + offsetY;
+
+                mParams.leftMargin = leftMargin;
+                mParams.topMargin = topMargin;
+                mLiveLayout2.setLayoutParams(mParams);
+
+                lastX = x;
+                lastY = y;
+
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent motionEvent) {
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+                return false;
             }
         });
+
 
 //        mVideoView.setVideoURI(Uri.parse(url));
 //        mVideoView.start();
@@ -263,9 +337,18 @@ public class MainActivity extends AppCompatActivity {
         mVideoView2.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer iMediaPlayer) {
-                //mVideoView2.start();
+                mVideoView2.start();
+            }
+        });
+        mLiveLayout2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(view.getContext(), "click", Toast.LENGTH_SHORT).show();
 
+                // mLiveLayout2.scrollTo(x, y);
 
+                // x += 10;
+                // y += 10;
             }
         });
 
@@ -313,6 +396,54 @@ public class MainActivity extends AppCompatActivity {
 
 
          */
+    }
+
+    //缩放开关
+    public void closeZoom(View view){
+
+        if (mCanZoom) {
+            //关闭缩放
+            mLiveLayout2.setOnTouchListener(null);
+            mCanZoom = false;
+            mBtZoom.setText("打开缩放");
+
+        }else {
+            // 打开缩放
+            mLiveLayout2.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                    // mScaleDetetor.onTouchEvent(motionEvent);
+                    mGestureDetector.onTouchEvent(motionEvent);
+                    return true;
+                }
+            });
+            mCanZoom = true;
+            mBtZoom.setText("关闭缩放");
+        }
+
+
+    }
+
+    public void clickBig(View view) {
+
+        int width = mLiveLayout2.getWidth();
+        int height = mLiveLayout2.getHeight();
+
+        mCurrentHeight += 30;
+        mCurrentWidth += 30;
+
+        mParams.height = mCurrentHeight;
+        mParams.width = mCurrentWidth;
+        mLiveLayout2.setLayoutParams(mParams);
+    }
+
+    public void clickSmall(View view) {
+        mCurrentHeight -= 30;
+        mCurrentWidth -= 30;
+        mParams.height = mCurrentHeight;
+        mParams.width = mCurrentWidth;
+        mLiveLayout2.setLayoutParams(mParams);
     }
 
     @Override
