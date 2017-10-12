@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.GestureDetector;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.ijk.live.application.Settings;
 import com.ijk.live.player.AndroidMediaController;
 import com.ijk.live.player.IjkVideoView;
+import com.ijk.live.widget.CustomScrollLayout;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -40,12 +42,12 @@ import master.flame.danmaku.ui.widget.DanmakuView;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CustomScrollLayout.ClickListener {
 
     private String url = "http://9890.vod.myqcloud.com/9890_9c1fa3e2aea011e59fc841df10c92278.f20.mp4";
     private String url2 = "http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4";
     private IjkVideoView mVideoView;
-    private RelativeLayout mLiveLayout;
+    private CustomScrollLayout mLiveLayout;
 
     private Settings mSetting;
 
@@ -211,8 +213,10 @@ public class MainActivity extends AppCompatActivity {
         mAudioMode = mAudioManager.getMode();
 
 
-        mLiveLayout = (RelativeLayout) findViewById(R.id.video_layout);
+        mLiveLayout = (CustomScrollLayout) findViewById(R.id.video_layout);
         mVideoView = (IjkVideoView) findViewById(R.id.video_view);
+        mLiveLayout.setclick(this);
+
 
         mLiveLayout2 = (RelativeLayout) findViewById(R.id.video_layout2);
         mVideoView2 = (IjkVideoView) findViewById(R.id.video_view2);
@@ -232,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
         mSetting = new Settings(this);
         mController = new AndroidMediaController(this, false);
-        mVideoView.setMediaController(mController);
+        //mVideoView.setMediaController(mController);
 
         mScaleDetetor = new ScaleGestureDetector(this, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
@@ -320,17 +324,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-//        mVideoView.setVideoURI(Uri.parse(url));
-//        mVideoView.start();
-
         mVideoView.setVideoPath(url);
         mVideoView2.setVideoPath(url2);
 
         mVideoView.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer iMediaPlayer) {
-                //mVideoView.start();
+                mVideoView.start();
             }
         });
 
@@ -345,10 +345,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Toast.makeText(view.getContext(), "click", Toast.LENGTH_SHORT).show();
 
+                //移动内容
                 // mLiveLayout2.scrollTo(x, y);
 
-                // x += 10;
-                // y += 10;
             }
         });
 
@@ -421,8 +420,6 @@ public class MainActivity extends AppCompatActivity {
             mCanZoom = true;
             mBtZoom.setText("关闭缩放");
         }
-
-
     }
 
     public void clickBig(View view) {
@@ -567,4 +564,8 @@ public class MainActivity extends AppCompatActivity {
         android.provider.Settings.System.putInt(getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS, value);
     }
 
+    @Override
+    public void click() {
+        Toast.makeText(this,"111",Toast.LENGTH_SHORT).show();
+    }
 }

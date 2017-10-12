@@ -6,7 +6,7 @@
     android:orientation="vertical"
     tools:context="com.ijk.live.MainActivity">
 
-    <RelativeLayout
+    <com.ijk.live.widget.CustomScrollLayout
         android:id="@+id/video_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
-    </RelativeLayout>
+    </com.ijk.live.widget.CustomScrollLayout>
 
     <RelativeLayout
         android:id="@+id/video_layout2"
